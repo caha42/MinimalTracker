@@ -18,6 +18,7 @@ import com.applandeo.materialcalendarview.listeners.OnDayClickListener;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -25,10 +26,13 @@ public class MainActivity extends AppCompatActivity {
 
     // Projection array. Creating indices for this array instead of doing
     // dynamic lookups improves performance.
-    public static final String[] EVENT_PROJECTION = new String[] {
-            CalendarContract.Calendars._ID
+    private static final String[] CALENDER_PROJECTION = new String[] {
+            Calendars._ID
     };
-    private static final int PROJECTION_ID_INDEX = 0;
+    private static final String[] EVENT_PROJECTION = new String[] {
+            Events.DTSTART,
+            Events.CALENDAR_TIME_ZONE
+    } ;
 
     private static final String CALENDER_NAME = "Migraine";
     private static final String CALENDER_OWNER = "MinimalMigraineTracker";
@@ -50,22 +54,43 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onDayClick(EventDay eventDay) {
                 if (calendars.contains(eventDay.getCalendar())) {
-                    events.remove(eventDay);
                     calendars.remove(eventDay.getCalendar());
+                    deleteEvent(calID, eventDay);
                 } else {
-                    events.add(eventDay);
                     calendars.add(eventDay.getCalendar());
+                    addEvent(calID, eventDay);
                 }
                 calendarView.setHighlightedDays(calendars);
 
-                addEvent(calID, eventDay);
             }
         });
 
         // get Events if calender exists
         if (calID != -1) {
-            //calendarView.setHighlightedDays();
+            ContentResolver cr = getContentResolver();
+            Uri uri = Events.CONTENT_URI;
+
+            // Submit the query and get a Cursor object back.
+            Cursor cur = cr.query(uri, EVENT_PROJECTION, null, null, null);
+
+            System.out.println("eventCursor count="+cur.getCount());
+            while (cur.moveToNext()) {
+                long startMillis = 0;
+                String timeZone = "";
+
+                startMillis = cur.getLong(0);
+                timeZone = cur.getString(1);
+
+                Calendar event = Calendar.getInstance();
+                event.setTimeInMillis(startMillis);
+                event.setTimeZone(TimeZone.getTimeZone(timeZone));
+                calendars.add(event);
+            }
+            calendarView.setHighlightedDays(calendars);
         }
+    }
+
+    private void deleteEvent(long calID, EventDay eventDay) {
     }
 
     private void addEvent(long calID, EventDay eventDay) {
@@ -74,7 +99,6 @@ public class MainActivity extends AppCompatActivity {
 
         Calendar day = eventDay.getCalendar();
         startMillis = day.getTimeInMillis();
-        // day.set(+1 Tag)
         endMillis = day.getTimeInMillis();
 
         ContentResolver cr = getContentResolver();
@@ -101,14 +125,14 @@ public class MainActivity extends AppCompatActivity {
         String[] selectionArgs = new String[] {CALENDER_NAME, CalendarContract.ACCOUNT_TYPE_LOCAL, CALENDER_OWNER};
 
         // Submit the query and get a Cursor object back.
-        Cursor cur = cr.query(uri, EVENT_PROJECTION, selection, selectionArgs, null);
+        Cursor cur = cr.query(uri, CALENDER_PROJECTION, selection, selectionArgs, null);
 
         long calID = -1;
 
         int nofCal = cur.getCount();
         if (nofCal == 1) {
             cur.moveToFirst();
-            calID = cur.getLong(PROJECTION_ID_INDEX);
+            calID = cur.getLong(0);
         } else if (nofCal == 0) {
             calID = createCalender();
         } else {
