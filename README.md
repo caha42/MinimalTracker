@@ -14,4 +14,4 @@ If you want the get rid of the created calender use the app [Calendar Toolbox](h
 * Carina Haupt
 
 ## License
-This project is licensed under the [Apache 2.0](LICENSES/Apache2.0.txt) license.
+This project is licensed under the [Apache 2.0](LICENSE.txt) license.
