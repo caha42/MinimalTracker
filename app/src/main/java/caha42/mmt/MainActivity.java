@@ -70,10 +70,8 @@ public class MainActivity extends AppCompatActivity {
             ContentResolver cr = getContentResolver();
             Uri uri = Events.CONTENT_URI;
 
-            // Submit the query and get a Cursor object back.
             Cursor cur = cr.query(uri, EVENT_PROJECTION, null, null, null);
 
-            System.out.println("eventCursor count="+cur.getCount());
             while (cur.moveToNext()) {
                 long startMillis = 0;
                 String timeZone = "";
@@ -91,28 +89,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void deleteEvent(long calID, EventDay eventDay) {
+
     }
 
     private void addEvent(long calID, EventDay eventDay) {
         long startMillis = 0;
-        long endMillis = 0;
 
         Calendar day = eventDay.getCalendar();
         startMillis = day.getTimeInMillis();
-        endMillis = day.getTimeInMillis();
 
         ContentResolver cr = getContentResolver();
         ContentValues values = new ContentValues();
         values.put(Events.DTSTART, startMillis);
-        values.put(Events.DTEND, endMillis);
         values.put(Events.ALL_DAY, true);
         values.put(Events.TITLE, CALENDER_NAME);
         values.put(Events.CALENDAR_ID, calID);
         values.put(Events.EVENT_TIMEZONE, eventDay.getCalendar().getTimeZone().toString());
-        Uri uri = cr.insert(Events.CONTENT_URI, values);
-
-        // get the event ID that is the last element in the Uri
-        long eventID = Long.parseLong(uri.getLastPathSegment());
+        cr.insert(Events.CONTENT_URI, values);
     }
 
     private long getCalenderId() {
