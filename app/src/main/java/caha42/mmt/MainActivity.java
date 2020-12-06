@@ -1,7 +1,10 @@
 package caha42.mmt;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.app.usage.EventStats;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
@@ -38,7 +41,6 @@ public class MainActivity extends AppCompatActivity {
     private static final String CALENDER_OWNER = "MinimalMigraineTracker";
 
     private CalendarView calendarView;
-    private List<EventDay> events = new ArrayList<>();
     private List<Calendar> calendars = new ArrayList<>();
 
     @Override
@@ -89,7 +91,33 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void deleteEvent(long calID, EventDay eventDay) {
+        ContentResolver cr = getContentResolver();
+        Uri uri = Events.CONTENT_URI;
 
+        long startMillis = 0;
+
+        Calendar day = eventDay.getCalendar();
+        startMillis = day.getTimeInMillis();
+
+        String selection = "((" + Events.CALENDAR_ID + " = ?) AND ("
+                + Events.DTSTART + " = ?) AND ("
+                + Events.TITLE + " = ?))";
+        String[] selectionArgs = new String[] {String.valueOf(calID), String.valueOf(startMillis), CALENDER_NAME};
+
+        int rows = cr.delete(Events.CONTENT_URI, selection, selectionArgs);
+
+        if (rows != 1) {
+            if (rows == 0) {
+                Toast.makeText(calendarView.getContext(),
+                        "The event could not be found. Go scold the developers!.",
+                        Toast.LENGTH_LONG).show();
+            }
+            else {
+                Toast.makeText(calendarView.getContext(),
+                        "More than one matching event exists for that day. Get rid of the redundancy and try again.",
+                        Toast.LENGTH_LONG).show();
+            }
+        s}
     }
 
     private void addEvent(long calID, EventDay eventDay) {
