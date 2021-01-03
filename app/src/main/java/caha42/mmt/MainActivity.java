@@ -2,9 +2,7 @@ package caha42.mmt;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.usage.EventStats;
 import android.content.ContentResolver;
-import android.content.ContentUris;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
@@ -21,7 +19,6 @@ import com.applandeo.materialcalendarview.listeners.OnDayClickListener;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -117,18 +114,17 @@ public class MainActivity extends AppCompatActivity {
                         "More than one matching event exists for that day. Get rid of the redundancy and try again.",
                         Toast.LENGTH_LONG).show();
             }
-        s}
+        }
     }
 
     private void addEvent(long calID, EventDay eventDay) {
-        long startMillis = 0;
-
         Calendar day = eventDay.getCalendar();
-        startMillis = day.getTimeInMillis();
+        long dateMillis = day.getTimeInMillis();
 
         ContentResolver cr = getContentResolver();
         ContentValues values = new ContentValues();
-        values.put(Events.DTSTART, startMillis);
+        values.put(Events.DTSTART, dateMillis);
+        values.put(Events.DTEND, dateMillis);
         values.put(Events.ALL_DAY, true);
         values.put(Events.TITLE, CALENDER_NAME);
         values.put(Events.CALENDAR_ID, calID);
