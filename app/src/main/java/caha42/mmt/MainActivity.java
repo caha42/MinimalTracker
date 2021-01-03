@@ -2,10 +2,14 @@ package caha42.mmt;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.PendingIntent;
 import android.app.usage.EventStats;
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -13,6 +17,7 @@ import android.os.Bundle;
 import android.provider.CalendarContract;
 import android.provider.CalendarContract.Events;
 import android.provider.CalendarContract.Calendars;
+import android.util.EventLog;
 import android.widget.Toast;
 
 import com.applandeo.materialcalendarview.CalendarView;
@@ -88,6 +93,22 @@ public class MainActivity extends AppCompatActivity {
             }
             calendarView.setHighlightedDays(calendars);
         }
+
+//        AppWidgetManager appWidgetManager =
+//                getSystemService(AppWidgetManager.class);
+//        ComponentName myProvider =
+//                new ComponentName(this, MinimalMigraineWidgetProvider.class);
+//
+//        if (appWidgetManager.isRequestPinAppWidgetSupported()) {
+//             // Configure the intent so that your app's broadcast receiver gets
+//            // the callback successfully. This callback receives the ID of the
+//            // newly-pinned widget (EXTRA_APPWIDGET_ID).
+//            PendingIntent successCallback = PendingIntent.getBroadcast(this, 0,
+//                    null, PendingIntent.FLAG_UPDATE_CURRENT);
+//
+//            appWidgetManager.requestPinAppWidget(myProvider, null, successCallback);
+//        }
+
     }
 
     private void deleteEvent(long calID, EventDay eventDay) {
@@ -117,18 +138,19 @@ public class MainActivity extends AppCompatActivity {
                         "More than one matching event exists for that day. Get rid of the redundancy and try again.",
                         Toast.LENGTH_LONG).show();
             }
-        s}
+        }
     }
 
     private void addEvent(long calID, EventDay eventDay) {
-        long startMillis = 0;
+        long dateMillis = 0;
 
         Calendar day = eventDay.getCalendar();
-        startMillis = day.getTimeInMillis();
+        dateMillis = day.getTimeInMillis();
 
         ContentResolver cr = getContentResolver();
         ContentValues values = new ContentValues();
-        values.put(Events.DTSTART, startMillis);
+        values.put(Events.DTSTART, dateMillis);
+        values.put(Events.DTEND, dateMillis);
         values.put(Events.ALL_DAY, true);
         values.put(Events.TITLE, CALENDER_NAME);
         values.put(Events.CALENDAR_ID, calID);
