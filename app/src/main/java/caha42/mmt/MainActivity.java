@@ -1,9 +1,12 @@
 package caha42.mmt;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -37,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String CALENDER_NAME = "Migraine";
     private static final String CALENDER_OWNER = "MinimalMigraineTracker";
 
+    private long calID = -1;
     private CalendarView calendarView;
     private List<Calendar> calendars = new ArrayList<>();
 
@@ -45,26 +49,46 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        long calID = getCalenderId();
+        ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALENDAR);
+
+        if ((ContextCompat.checkSelfPermission(
+                this, Manifest.permission.READ_CALENDAR) ==
+                PackageManager.PERMISSION_DENIED) || (ContextCompat.checkSelfPermission(
+                this, Manifest.permission.WRITE_CALENDAR) ==
+                PackageManager.PERMISSION_DENIED)) {
+            requestPermissions(new String[]{Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR,},
+                    42);
+        }
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                                           int[] grantResults) {
+        switch (requestCode) {
+            case 42:
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 &&
+                        grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    startTracker();
+                } else {
+                    Toast.makeText(calendarView.getContext(),
+                            "Minimal Migraine Tracker does not work without calendar access. " +
+                                    "It needs to create a calendar to store tracked migraines. Please restart app",
+                            Toast.LENGTH_LONG).show();
+                }
+        }
+    }
+
+    private void startTracker() {
+        getCalenderId();
+        if (calID == -1) {
+            createCalender();
+        }
 
         calendarView = (CalendarView) findViewById(R.id.calendarView);
 
-        calendarView.setOnDayClickListener(new OnDayClickListener() {
-            @Override
-            public void onDayClick(EventDay eventDay) {
-                if (calendars.contains(eventDay.getCalendar())) {
-                    calendars.remove(eventDay.getCalendar());
-                    deleteEvent(calID, eventDay);
-                } else {
-                    calendars.add(eventDay.getCalendar());
-                    addEvent(calID, eventDay);
-                }
-                calendarView.setHighlightedDays(calendars);
-
-            }
-        });
-
-        // get Events if calender exists
+        // fill calendar with Events if calender exists
         if (calID != -1) {
             ContentResolver cr = getContentResolver();
             Uri uri = Events.CONTENT_URI;
@@ -85,6 +109,91 @@ public class MainActivity extends AppCompatActivity {
             }
             calendarView.setHighlightedDays(calendars);
         }
+
+        // set handler
+        calendarView.setOnDayClickListener(new OnDayClickListener() {
+            @Override
+            public void onDayClick(EventDay eventDay) {
+                if (calendars.contains(eventDay.getCalendar())) {
+                    calendars.remove(eventDay.getCalendar());
+                    deleteEvent(calID, eventDay);
+                } else {
+                    calendars.add(eventDay.getCalendar());
+                    addEvent(calID, eventDay);
+                }
+                calendarView.setHighlightedDays(calendars);
+
+            }
+        });
+    }
+
+
+    /**
+     *
+     * @return -1 if calender does not exist
+     */
+    private void getCalenderId() {
+        // Search for calender
+        ContentResolver cr = getContentResolver();
+        Uri uri = Calendars.CONTENT_URI;
+        String selection = "((" + Calendars.CALENDAR_DISPLAY_NAME + " = ?) AND ("
+                + Calendars.ACCOUNT_TYPE + " = ?) AND ("
+                + Calendars.OWNER_ACCOUNT + " = ?))";
+        String[] selectionArgs = new String[] {CALENDER_NAME, CalendarContract.ACCOUNT_TYPE_LOCAL, CALENDER_OWNER};
+
+        // Submit the query and get a Cursor object back.
+        Cursor cur = cr.query(uri, CALENDER_PROJECTION, selection, selectionArgs, null);
+
+        int nofCal = cur.getCount();
+        if (nofCal == 1) {
+            cur.moveToFirst();
+            calID = cur.getLong(0);
+        } else if (nofCal > 1) {
+            Toast.makeText(calendarView.getContext(),
+                    "More than one matching calender exist. Get rid of the redundancy and try again.",
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void createCalender() {
+        ContentResolver cr = getContentResolver();
+        ContentValues values = new ContentValues();
+
+        values.put(Calendars.ACCOUNT_NAME, CALENDER_OWNER);
+        values.put(Calendars.ACCOUNT_TYPE, CalendarContract.ACCOUNT_TYPE_LOCAL);
+        values.put(Calendars.NAME, CALENDER_NAME);
+        values.put(Calendars.CALENDAR_DISPLAY_NAME, CALENDER_NAME);
+        values.put(Calendars.SYNC_EVENTS, 1);
+        values.put(Calendars.VISIBLE, 1);
+        values.put(Calendars.CALENDAR_ACCESS_LEVEL, Calendars.CAL_ACCESS_OWNER);
+        values.put(Calendars.OWNER_ACCOUNT, CALENDER_OWNER);
+        values.put(Calendars.DIRTY, 1);
+        values.put(Calendars.CALENDAR_TIME_ZONE, TimeZone.getDefault().getID());
+
+        Uri calUri = Calendars.CONTENT_URI;
+
+        calUri = calUri.buildUpon()
+                .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
+                .appendQueryParameter(Calendars.ACCOUNT_NAME, CALENDER_OWNER)
+                .appendQueryParameter(Calendars.ACCOUNT_TYPE, CalendarContract.ACCOUNT_TYPE_LOCAL)
+                .build();
+        Uri result = cr.insert(calUri, values);
+        calID = Long.parseLong(result.getLastPathSegment()); // cast to long
+    }
+
+    private void addEvent(long calID, EventDay eventDay) {
+        Calendar day = eventDay.getCalendar();
+        long dateMillis = day.getTimeInMillis();
+
+        ContentResolver cr = getContentResolver();
+        ContentValues values = new ContentValues();
+        values.put(Events.DTSTART, dateMillis);
+        values.put(Events.DTEND, dateMillis);
+        values.put(Events.ALL_DAY, true);
+        values.put(Events.TITLE, CALENDER_NAME);
+        values.put(Events.CALENDAR_ID, calID);
+        values.put(Events.EVENT_TIMEZONE, eventDay.getCalendar().getTimeZone().toString());
+        cr.insert(Events.CONTENT_URI, values);
     }
 
     private void deleteEvent(long calID, EventDay eventDay) {
@@ -115,76 +224,5 @@ public class MainActivity extends AppCompatActivity {
                         Toast.LENGTH_LONG).show();
             }
         }
-    }
-
-    private void addEvent(long calID, EventDay eventDay) {
-        Calendar day = eventDay.getCalendar();
-        long dateMillis = day.getTimeInMillis();
-
-        ContentResolver cr = getContentResolver();
-        ContentValues values = new ContentValues();
-        values.put(Events.DTSTART, dateMillis);
-        values.put(Events.DTEND, dateMillis);
-        values.put(Events.ALL_DAY, true);
-        values.put(Events.TITLE, CALENDER_NAME);
-        values.put(Events.CALENDAR_ID, calID);
-        values.put(Events.EVENT_TIMEZONE, eventDay.getCalendar().getTimeZone().toString());
-        cr.insert(Events.CONTENT_URI, values);
-    }
-
-    private long getCalenderId() {
-        // Search for calender
-        ContentResolver cr = getContentResolver();
-        Uri uri = Calendars.CONTENT_URI;
-        String selection = "((" + Calendars.CALENDAR_DISPLAY_NAME + " = ?) AND ("
-                + Calendars.ACCOUNT_TYPE + " = ?) AND ("
-                + Calendars.OWNER_ACCOUNT + " = ?))";
-        String[] selectionArgs = new String[] {CALENDER_NAME, CalendarContract.ACCOUNT_TYPE_LOCAL, CALENDER_OWNER};
-
-        // Submit the query and get a Cursor object back.
-        Cursor cur = cr.query(uri, CALENDER_PROJECTION, selection, selectionArgs, null);
-
-        long calID = -1;
-
-        int nofCal = cur.getCount();
-        if (nofCal == 1) {
-            cur.moveToFirst();
-            calID = cur.getLong(0);
-        } else if (nofCal == 0) {
-            calID = createCalender();
-        } else {
-            Toast.makeText(calendarView.getContext(),
-                    "More than one matching calender exist. Get rid of the redundancy and try again.",
-                    Toast.LENGTH_LONG).show();
-        }
-
-        return calID;
-    }
-
-    private long createCalender() {
-        ContentResolver cr = getContentResolver();
-        ContentValues values = new ContentValues();
-
-        values.put(Calendars.ACCOUNT_NAME, CALENDER_OWNER);
-        values.put(Calendars.ACCOUNT_TYPE, CalendarContract.ACCOUNT_TYPE_LOCAL);
-        values.put(Calendars.NAME, CALENDER_NAME);
-        values.put(Calendars.CALENDAR_DISPLAY_NAME, CALENDER_NAME);
-        values.put(Calendars.SYNC_EVENTS, 1);
-        values.put(Calendars.VISIBLE, 1);
-        values.put(Calendars.CALENDAR_ACCESS_LEVEL, Calendars.CAL_ACCESS_OWNER);
-        values.put(Calendars.OWNER_ACCOUNT, CALENDER_OWNER);
-        values.put(Calendars.DIRTY, 1);
-        values.put(Calendars.CALENDAR_TIME_ZONE, TimeZone.getDefault().getID());
-
-        Uri calUri = Calendars.CONTENT_URI;
-
-        calUri = calUri.buildUpon()
-                .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
-                .appendQueryParameter(Calendars.ACCOUNT_NAME, CALENDER_OWNER)
-                .appendQueryParameter(Calendars.ACCOUNT_TYPE, CalendarContract.ACCOUNT_TYPE_LOCAL)
-                .build();
-        Uri result = cr.insert(calUri, values);
-        long calID = Long.parseLong(result.getLastPathSegment()); // cast to long
-        return calID;
     }
 }
