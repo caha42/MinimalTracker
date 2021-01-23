@@ -2,11 +2,13 @@ package caha42.mmt;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.preference.PreferenceManager;
 
 import android.Manifest;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -41,8 +43,8 @@ public class MainActivity extends AppCompatActivity {
             Events.CALENDAR_TIME_ZONE
     } ;
 
-    private static final String CALENDER_NAME = "Migraine";
-    private static final String CALENDER_OWNER = "MinimalMigraineTracker";
+    private static final String CALENDER_OWNER = "MinimalTracker";
+    private String TRACKER_NAME;
 
     private long calID = -1;
     private CalendarView calendarView;
@@ -108,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
                     startTracker();
                 } else {
                     Toast.makeText(calendarView.getContext(),
-                            "Minimal Migraine Tracker does not work without calendar access. " +
+                            "Minimal Tracker does not work without calendar access. " +
                                     "It needs to create a calendar to store tracked migraines. Please restart app",
                             Toast.LENGTH_LONG).show();
                 }
@@ -116,6 +118,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startTracker() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        TRACKER_NAME = prefs.getString("tracker_name", "Migraine");
+        Toast.makeText(this, TRACKER_NAME, Toast.LENGTH_SHORT).show(); // shows true if the SwitchPreferenceCompat is ON, and false if OFF.
+
         getCalenderId();
         if (calID == -1) {
             createCalender();
@@ -127,8 +133,11 @@ public class MainActivity extends AppCompatActivity {
         if (calID != -1) {
             ContentResolver cr = getContentResolver();
             Uri uri = Events.CONTENT_URI;
+            String selection = "((" + Events.CALENDAR_ID + " = ?) AND ("
+                    + Events.TITLE + " = ?))";
+            String[] selectionArgs = new String[] {String.valueOf(calID), TRACKER_NAME};
 
-            Cursor cur = cr.query(uri, EVENT_PROJECTION, null, null, null);
+            Cursor cur = cr.query(uri, EVENT_PROJECTION, selection, selectionArgs, null);
 
             while (cur.moveToNext()) {
                 long startMillis = 0;
@@ -174,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
         String selection = "((" + Calendars.CALENDAR_DISPLAY_NAME + " = ?) AND ("
                 + Calendars.ACCOUNT_TYPE + " = ?) AND ("
                 + Calendars.OWNER_ACCOUNT + " = ?))";
-        String[] selectionArgs = new String[] {CALENDER_NAME, CalendarContract.ACCOUNT_TYPE_LOCAL, CALENDER_OWNER};
+        String[] selectionArgs = new String[] {TRACKER_NAME, CalendarContract.ACCOUNT_TYPE_LOCAL, CALENDER_OWNER};
 
         // Submit the query and get a Cursor object back.
         Cursor cur = cr.query(uri, CALENDER_PROJECTION, selection, selectionArgs, null);
@@ -196,8 +205,8 @@ public class MainActivity extends AppCompatActivity {
 
         values.put(Calendars.ACCOUNT_NAME, CALENDER_OWNER);
         values.put(Calendars.ACCOUNT_TYPE, CalendarContract.ACCOUNT_TYPE_LOCAL);
-        values.put(Calendars.NAME, CALENDER_NAME);
-        values.put(Calendars.CALENDAR_DISPLAY_NAME, CALENDER_NAME);
+        values.put(Calendars.NAME, TRACKER_NAME);
+        values.put(Calendars.CALENDAR_DISPLAY_NAME, TRACKER_NAME);
         values.put(Calendars.SYNC_EVENTS, 1);
         values.put(Calendars.VISIBLE, 1);
         values.put(Calendars.CALENDAR_ACCESS_LEVEL, Calendars.CAL_ACCESS_OWNER);
@@ -225,7 +234,7 @@ public class MainActivity extends AppCompatActivity {
         values.put(Events.DTSTART, dateMillis);
         values.put(Events.DTEND, dateMillis);
         values.put(Events.ALL_DAY, true);
-        values.put(Events.TITLE, CALENDER_NAME);
+        values.put(Events.TITLE, TRACKER_NAME);
         values.put(Events.CALENDAR_ID, calID);
         values.put(Events.EVENT_TIMEZONE, eventDay.getCalendar().getTimeZone().toString());
         cr.insert(Events.CONTENT_URI, values);
@@ -243,7 +252,7 @@ public class MainActivity extends AppCompatActivity {
         String selection = "((" + Events.CALENDAR_ID + " = ?) AND ("
                 + Events.DTSTART + " = ?) AND ("
                 + Events.TITLE + " = ?))";
-        String[] selectionArgs = new String[] {String.valueOf(calID), String.valueOf(startMillis), CALENDER_NAME};
+        String[] selectionArgs = new String[] {String.valueOf(calID), String.valueOf(startMillis), TRACKER_NAME};
 
         int rows = cr.delete(Events.CONTENT_URI, selection, selectionArgs);
 
