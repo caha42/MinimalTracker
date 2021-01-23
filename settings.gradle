@@ -1,2 +1,2 @@
 include ':app'
-rootProject.name = "MinimalMigraineTracker"
+rootProject.name = "MinimalTracker"

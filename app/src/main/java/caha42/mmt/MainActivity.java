@@ -110,8 +110,8 @@ public class MainActivity extends AppCompatActivity {
                     startTracker();
                 } else {
                     Toast.makeText(calendarView.getContext(),
-                            "Minimal Tracker does not work without calendar access. " +
-                                    "It needs to create a calendar to store tracked migraines. Please restart app",
+                            "MinimalTracker does not work without calendar access. " +
+                                    "It needs to create a calendar to store tracked events. Please restart app",
                             Toast.LENGTH_LONG).show();
                 }
         }
