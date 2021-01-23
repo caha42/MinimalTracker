@@ -58,6 +58,8 @@ public class MainActivity extends AppCompatActivity {
                 PackageManager.PERMISSION_DENIED)) {
             requestPermissions(new String[]{Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR,},
                     42);
+        } else {
+            startTracker();
         }
     }
 
