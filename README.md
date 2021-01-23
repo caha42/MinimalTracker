@@ -5,7 +5,7 @@ This app tracks if something occurred on a date. You can define what you want to
 Build it in Android Studio. Min SDK Version 29. Runs with >= Android 10. Uses [MaterialCalendarView](https://github.com/Applandeo/Material-Calendar-View) (**Apache 2.0 License**).
 
 ## Usage
-Go to Settings > App > MinimalTracker > Permissions and allow access to the calendar.
+Go to the settings menu and define which type of event (i.e. Migraine, Period, Sport, ...) to track.
 
 ## Uninstall
 If you want the get rid of the created calender use the app [Calendar Toolbox](https://play.google.com/store/apps/details?id=com.whitebox.calendartoolbox).
