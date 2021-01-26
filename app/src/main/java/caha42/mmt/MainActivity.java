@@ -26,10 +26,15 @@ import com.applandeo.materialcalendarview.CalendarView;
 import com.applandeo.materialcalendarview.EventDay;
 import com.applandeo.materialcalendarview.listeners.OnDayClickListener;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -126,6 +131,8 @@ public class MainActivity extends AppCompatActivity {
 
         calendarView = (CalendarView) findViewById(R.id.calendarView);
 
+        calendarView.setDisabledDays(getDatesUntilEndOfMonth());
+
         // fill calendar with Events if calender exists
         if (calID != -1) {
             ContentResolver cr = getContentResolver();
@@ -167,7 +174,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
 
     /**
      *
@@ -265,5 +271,27 @@ public class MainActivity extends AppCompatActivity {
                         Toast.LENGTH_LONG).show();
             }
         }
+    }
+
+    public static List<Calendar> getDatesUntilEndOfMonth() {
+
+        LocalDate startDate = LocalDate.now().plusDays(1);
+        LocalDate endDate = startDate.with(TemporalAdjusters.lastDayOfMonth());
+
+        long numOfDaysBetween = ChronoUnit.DAYS.between(startDate, endDate);
+        List<LocalDate> dates = IntStream.iterate(0, i -> i + 1)
+                .limit(numOfDaysBetween)
+                .mapToObj(i -> startDate.plusDays(i))
+                .collect(Collectors.toList());
+
+        List<Calendar> datesUntilEndOfMonth = new ArrayList<Calendar>();
+        for (LocalDate date : dates) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.clear();
+            calendar.set(date.getYear(), date.getMonthValue()-1, date.getDayOfMonth());
+            datesUntilEndOfMonth.add(calendar);
+        }
+
+        return datesUntilEndOfMonth;
     }
 }
