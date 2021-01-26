@@ -82,9 +82,6 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.new_game:
                 Intent intent = new Intent(this, SettingsActivity.class);
-                //EditText editText = (EditText) findViewById(R.id.editText);
-                //String message = editText.getText().toString();
-                //intent.putExtra(EXTRA_MESSAGE, message);
                 startActivity(intent);
 
                 return true;

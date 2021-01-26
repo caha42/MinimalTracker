@@ -5,8 +5,12 @@
     <!-- Settings Menue Items -->
     <string name="help">Help</string>
     <string name="manage_trackers">Manage trackers</string>
+
+    <!-- Settings Tracker Category -->
     <string name="tracker_header">Manage Tracker</string>
     <string name="tracker_name_title">Tracker Name</string>
+
+    <!-- Settings Storage Category -->
     <string name="storage_header">Storage</string>
     <string name="storage_title">Local</string>
     <string name="storage_summary">Default local calendar is used to store tracked dates.</string>
