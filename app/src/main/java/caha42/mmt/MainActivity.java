@@ -122,7 +122,6 @@ public class MainActivity extends AppCompatActivity {
     private void startTracker() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         TRACKER_NAME = prefs.getString("tracker_name", "Migraine");
-        Toast.makeText(this, TRACKER_NAME, Toast.LENGTH_SHORT).show(); // shows true if the SwitchPreferenceCompat is ON, and false if OFF.
 
         getCalenderId();
         if (calID == -1) {
