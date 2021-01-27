@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
 
     private long calID = -1;
     private CalendarView calendarView;
-    private List<Calendar> calendars = new ArrayList<>();
+    private List<Calendar> events = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -153,24 +153,21 @@ public class MainActivity extends AppCompatActivity {
                 Calendar event = Calendar.getInstance();
                 event.setTimeInMillis(startMillis);
                 event.setTimeZone(TimeZone.getTimeZone(timeZone));
-                calendars.add(event);
+                events.add(event);
             }
-            calendarView.setHighlightedDays(calendars);
+            calendarView.setSelectedDates(events);
         }
 
         // set handler
         calendarView.setOnDayClickListener(new OnDayClickListener() {
             @Override
             public void onDayClick(EventDay eventDay) {
-                if (calendars.contains(eventDay.getCalendar())) {
-                    calendars.remove(eventDay.getCalendar());
-                    deleteEvent(calID, eventDay);
+                Calendar event = eventDay.getCalendar();
+                if (events.contains(eventDay.getCalendar())) {
+                    deleteEvent(calID, event);
                 } else {
-                    calendars.add(eventDay.getCalendar());
-                    addEvent(calID, eventDay);
+                    addEvent(calID, event);
                 }
-                calendarView.setHighlightedDays(calendars);
-
             }
         });
     }
@@ -228,9 +225,8 @@ public class MainActivity extends AppCompatActivity {
         calID = Long.parseLong(result.getLastPathSegment()); // cast to long
     }
 
-    private void addEvent(long calID, EventDay eventDay) {
-        Calendar day = eventDay.getCalendar();
-        long dateMillis = day.getTimeInMillis();
+    private void addEvent(long calID, Calendar event) {
+        long dateMillis = event.getTimeInMillis();
 
         ContentResolver cr = getContentResolver();
         ContentValues values = new ContentValues();
@@ -239,18 +235,17 @@ public class MainActivity extends AppCompatActivity {
         values.put(Events.ALL_DAY, true);
         values.put(Events.TITLE, TRACKER_NAME);
         values.put(Events.CALENDAR_ID, calID);
-        values.put(Events.EVENT_TIMEZONE, eventDay.getCalendar().getTimeZone().toString());
+        values.put(Events.EVENT_TIMEZONE, event.getTimeZone().toString());
         cr.insert(Events.CONTENT_URI, values);
     }
 
-    private void deleteEvent(long calID, EventDay eventDay) {
+    private void deleteEvent(long calID, Calendar event) {
         ContentResolver cr = getContentResolver();
         Uri uri = Events.CONTENT_URI;
 
         long startMillis = 0;
 
-        Calendar day = eventDay.getCalendar();
-        startMillis = day.getTimeInMillis();
+        startMillis = event.getTimeInMillis();
 
         String selection = "((" + Events.CALENDAR_ID + " = ?) AND ("
                 + Events.DTSTART + " = ?) AND ("
