@@ -1,5 +1,7 @@
 package caha42.mmt.ui.main;
 
+import android.content.ContentResolver;
+
 import androidx.arch.core.util.Function;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -10,7 +12,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import caha42.mmt.io.CalendarController;
+
 public class TrackerViewModel extends ViewModel {
+
+    private ContentResolver cr;
 
     private int calId;
     private String trackerName;
@@ -18,7 +24,6 @@ public class TrackerViewModel extends ViewModel {
 
     public TrackerViewModel() {
         super();
-        this.events = new ArrayList<>();
     }
 
     public void setCalendarId(int calId) {
@@ -29,21 +34,21 @@ public class TrackerViewModel extends ViewModel {
         this.trackerName = trackerName;
     }
 
-    public void trackDay(Calendar day) {
-        this.events.add(day);
+    public void loadData(ContentResolver cr) {
+        this.events = CalendarController.loadTrackedDays(cr, this.calId, this.trackerName);
     }
 
-    public boolean isEventTracked(Calendar day) {
-        return this.events.contains(day);
+    public void toggleTracking(Calendar day) {
+        if (this.events.contains(day)) {
+            CalendarController.untrackDay(this.cr, this.calId, this.trackerName, day);
+            this.events.remove(day);
+        } else {
+            CalendarController.trackDay(this.cr, this.calId, this.trackerName, day);
+            this.events.add(day);
+        }
     }
 
-    public int getCalendarId() {
-        return this.calId;
+    public List<Calendar> getTrackedDays() {
+        return this.events;
     }
-
-    public String getTrackerName() {
-        return this.trackerName;
-    }
-
-
 }

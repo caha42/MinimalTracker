@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import caha42.mmt.io.CalendarController;
 import caha42.mmt.R;
 
 /**
@@ -55,6 +54,8 @@ public class TrackerFragment extends Fragment {
 
         String trackerName = getArguments().getString(ARG_TRACKER_NAME);
         pageViewModel.setTrackerName(trackerName);
+
+        pageViewModel.loadData(getActivity().getContentResolver());
     }
 
     @Override
@@ -75,23 +76,15 @@ public class TrackerFragment extends Fragment {
         CalendarView calendarView = (CalendarView) getView().findViewById(R.id.calendarView);
         calendarView.setDisabledDays(getDatesUntilEndOfMonth());
 
-        // fill calendar with Events if calender exists
-
-        List<Calendar> trackedDays = CalendarController.loadTrackedDays(getActivity().getApplicationContext().getContentResolver(), pageViewModel.getCalendarId(), pageViewModel.getTrackerName());
+        List<Calendar> trackedDays = pageViewModel.getTrackedDays();
         calendarView.setSelectedDates(trackedDays);
-
 
         // set handler
         calendarView.setOnDayClickListener(new OnDayClickListener() {
             @Override
             public void onDayClick(EventDay eventDay) {
                 Calendar day = eventDay.getCalendar();
-                ;
-                if (pageViewModel.isEventTracked(eventDay.getCalendar())) {
-                    CalendarController.untrackDay(getActivity().getApplicationContext().getContentResolver(), pageViewModel.getCalendarId(), pageViewModel.getTrackerName(), day);
-                } else {
-                    CalendarController.trackDay(getActivity().getApplicationContext().getContentResolver(), pageViewModel.getCalendarId(), pageViewModel.getTrackerName(), day);
-                }
+                pageViewModel.toggleTracking(day);
             }
         });
     }
