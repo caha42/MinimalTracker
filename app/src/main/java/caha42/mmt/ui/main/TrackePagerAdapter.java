@@ -8,24 +8,22 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import caha42.mmt.CalendarController;
+import caha42.mmt.io.CalendarController;
 
 /**
  * A [FragmentPagerAdapter] that returns a fragment corresponding to
  * one of the sections/tabs/pages.
  */
-public class SectionsPagerAdapter extends FragmentPagerAdapter {
+public class TrackePagerAdapter extends FragmentPagerAdapter {
 
     private final Context mContext;
 
     private List<Map.Entry<Integer, String>> trackers;
 
-    public SectionsPagerAdapter(Context context, FragmentManager fm) {
+    public TrackePagerAdapter(Context context, FragmentManager fm) {
         super(fm);
         mContext = context;
         this.trackers = CalendarController.loadTrackers(mContext.getContentResolver());
@@ -40,7 +38,7 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
     public Fragment getItem(int position) {
         // getItem is called to instantiate the fragment for the given page.
         // Return a PlaceholderFragment (defined as a static inner class below).
-        return PlaceholderFragment.newInstance(trackers.get(position).getKey(), trackers.get(position).getValue());
+        return TrackerFragment.newInstance(trackers.get(position).getKey(), trackers.get(position).getValue());
     }
 
     @Nullable

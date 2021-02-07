@@ -1,11 +1,10 @@
-package caha42.mmt;
+package caha42.mmt.io;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.CalendarContract;
-import android.widget.Toast;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;

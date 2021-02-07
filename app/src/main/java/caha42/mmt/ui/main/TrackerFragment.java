@@ -23,21 +23,21 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import caha42.mmt.CalendarController;
+import caha42.mmt.io.CalendarController;
 import caha42.mmt.R;
 
 /**
  * A placeholder fragment containing a simple view.
  */
-public class PlaceholderFragment extends Fragment {
+public class TrackerFragment extends Fragment {
 
     private static final String ARG_CALENDAR_ID = "calendar_id";
     private static final String ARG_TRACKER_NAME = "tracker_namer";
 
-    private PageViewModel pageViewModel;
+    private TrackerViewModel pageViewModel;
 
-    public static PlaceholderFragment newInstance(int calendarId, String trackerName) {
-        PlaceholderFragment fragment = new PlaceholderFragment();
+    public static TrackerFragment newInstance(int calendarId, String trackerName) {
+        TrackerFragment fragment = new TrackerFragment();
         Bundle bundle = new Bundle();
         bundle.putInt(ARG_CALENDAR_ID, calendarId);
         bundle.putString(ARG_TRACKER_NAME, trackerName);
@@ -48,9 +48,11 @@ public class PlaceholderFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        pageViewModel = new ViewModelProvider(this).get(PageViewModel.class);
+        pageViewModel = new ViewModelProvider(this).get(TrackerViewModel.class);
+
         int calId = getArguments().getInt(ARG_CALENDAR_ID);
         pageViewModel.setCalendarId(calId);
+
         String trackerName = getArguments().getString(ARG_TRACKER_NAME);
         pageViewModel.setTrackerName(trackerName);
     }
@@ -59,7 +61,7 @@ public class PlaceholderFragment extends Fragment {
     public View onCreateView(
             @NonNull LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
-        View root = inflater.inflate(R.layout.fragment_main, container, false);
+        View root = inflater.inflate(R.layout.fragment_tracker, container, false);
         return root;
     }
 

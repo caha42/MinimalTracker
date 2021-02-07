@@ -10,13 +10,13 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-public class PageViewModel extends ViewModel {
+public class TrackerViewModel extends ViewModel {
 
     private int calId;
     private String trackerName;
     private List<Calendar> events;
 
-    public PageViewModel() {
+    public TrackerViewModel() {
         super();
         this.events = new ArrayList<>();
     }
