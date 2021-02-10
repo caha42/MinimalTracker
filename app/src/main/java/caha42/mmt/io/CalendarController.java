@@ -47,6 +47,31 @@ public class CalendarController {
         return trackers;
     }
 
+    public static int createCalender(ContentResolver cr, String trackerName) {
+        ContentValues values = new ContentValues();
+
+        values.put(CalendarContract.Calendars.ACCOUNT_NAME, CALENDER_OWNER);
+        values.put(CalendarContract.Calendars.ACCOUNT_TYPE, CalendarContract.ACCOUNT_TYPE_LOCAL);
+        values.put(CalendarContract.Calendars.NAME, trackerName);
+        values.put(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME, trackerName);
+        values.put(CalendarContract.Calendars.SYNC_EVENTS, 1);
+        values.put(CalendarContract.Calendars.VISIBLE, 1);
+        values.put(CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL, CalendarContract.Calendars.CAL_ACCESS_OWNER);
+        values.put(CalendarContract.Calendars.OWNER_ACCOUNT, CALENDER_OWNER);
+        values.put(CalendarContract.Calendars.DIRTY, 1);
+        values.put(CalendarContract.Calendars.CALENDAR_TIME_ZONE, TimeZone.getDefault().getID());
+
+        Uri calUri = CalendarContract.Calendars.CONTENT_URI;
+
+        calUri = calUri.buildUpon()
+                .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
+                .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, CALENDER_OWNER)
+                .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_TYPE, CalendarContract.ACCOUNT_TYPE_LOCAL)
+                .build();
+        Uri result = cr.insert(calUri, values);
+        return Integer.parseInt(result.getLastPathSegment());
+    }
+
     public static List<Calendar> loadTrackedDays(ContentResolver cr, int calendarId, String trackerName) {
         Uri uri = CalendarContract.Events.CONTENT_URI;
         String selection = "((" + CalendarContract.Events.CALENDAR_ID + " = ?) AND ("
@@ -70,32 +95,6 @@ public class CalendarController {
         }
         return trackedDays;
     }
-
-//    private void createCalender() {
-//        ContentResolver cr = getActivity().getApplicationContext().getContentResolver();
-//        ContentValues values = new ContentValues();
-//
-//        values.put(CalendarContract.Calendars.ACCOUNT_NAME, CALENDER_OWNER);
-//        values.put(CalendarContract.Calendars.ACCOUNT_TYPE, CalendarContract.ACCOUNT_TYPE_LOCAL);
-//        values.put(CalendarContract.Calendars.NAME, trackerName);
-//        values.put(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME, trackerName);
-//        values.put(CalendarContract.Calendars.SYNC_EVENTS, 1);
-//        values.put(CalendarContract.Calendars.VISIBLE, 1);
-//        values.put(CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL, CalendarContract.Calendars.CAL_ACCESS_OWNER);
-//        values.put(CalendarContract.Calendars.OWNER_ACCOUNT, CALENDER_OWNER);
-//        values.put(CalendarContract.Calendars.DIRTY, 1);
-//        values.put(CalendarContract.Calendars.CALENDAR_TIME_ZONE, TimeZone.getDefault().getID());
-//
-//        Uri calUri = CalendarContract.Calendars.CONTENT_URI;
-//
-//        calUri = calUri.buildUpon()
-//                .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
-//                .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, CALENDER_OWNER)
-//                .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_TYPE, CalendarContract.ACCOUNT_TYPE_LOCAL)
-//                .build();
-//        Uri result = cr.insert(calUri, values);
-//        calId = Long.parseLong(result.getLastPathSegment()); // cast to long
-//    }
 
     public static void trackDay(ContentResolver cr, int calendarId, String trackerName, Calendar day) {
         long dateMillis = day.getTimeInMillis();
