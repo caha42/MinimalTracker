@@ -3,8 +3,9 @@
     <string name="title_activity_settings">Manage Trackers</string>
 
     <!-- Settings Menue Items -->
-    <string name="help">Help</string>
+    <string name="add_tracker">Add tracker</string>
     <string name="manage_trackers">Manage trackers</string>
+    <string name="help">Help</string>
 
     <!-- Settings Tracker Category -->
     <string name="tracker_header">Manage Tracker</string>
@@ -14,6 +15,8 @@
     <string name="storage_header">Storage</string>
     <string name="storage_title">Local</string>
     <string name="storage_summary">Default local calendar is used to store tracked dates.</string>
+    <string name="create">Create</string>
+    <string name="cancel">Cancel</string>
 
 
 </resources>

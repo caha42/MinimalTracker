@@ -2,6 +2,7 @@ package caha42.mmt;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.DialogFragment;
 import androidx.viewpager.widget.ViewPager;
 
 import android.Manifest;
@@ -12,22 +13,20 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.tabs.TabLayout;
 
+import caha42.mmt.io.CalendarController;
 import caha42.mmt.ui.main.TrackePagerAdapter;
+import caha42.mmt.ui.settings.AddTrackerDialogFragement;
 
 public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_tabbed);
-        TrackePagerAdapter sectionsPagerAdapter = new TrackePagerAdapter(this, getSupportFragmentManager());
-        ViewPager viewPager = findViewById(R.id.view_pager);
-        viewPager.setAdapter(sectionsPagerAdapter);
-        TabLayout tabs = findViewById(R.id.tabs);
-        tabs.setupWithViewPager(viewPager);
 
         ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALENDAR);
 
@@ -38,6 +37,8 @@ public class MainActivity extends AppCompatActivity {
                 PackageManager.PERMISSION_DENIED)) {
             requestPermissions(new String[]{Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR,},
                     42);
+        } else {
+            startTrackers();
         }
     }
 
@@ -52,10 +53,9 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
         switch (item.getItemId()) {
-            case R.id.new_game:
-                Intent intent = new Intent(this, SettingsActivity.class);
-                startActivity(intent);
-
+            case R.id.add_tracker:
+                DialogFragment newFragment = new AddTrackerDialogFragement();
+                newFragment.show(getSupportFragmentManager(), "tracker");
                 return true;
             case R.id.help:
                 //Toast.makeText(calendarView.getContext(),
@@ -76,14 +76,23 @@ public class MainActivity extends AppCompatActivity {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0 &&
                         grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                //    startTracker();
-                //} else {
-                //    Toast.makeText(calendarView.getContext(),
-                //            "MinimalTracker does not work without calendar access. " +
-                 //                   "It needs to create a calendar to store tracked events. Please restart app",
-                 //           Toast.LENGTH_LONG).show();
+                    this.startTrackers();
+                    } else {
+                        Toast.makeText(this.getApplicationContext(),
+                            "MinimalTracker does not work without calendar access. " +
+                                   "It needs to create a calendar to store tracked events. Please restart app",
+                           Toast.LENGTH_LONG).show();
                 }
         }
+    }
+
+    private void startTrackers() {
+        setContentView(R.layout.activity_tabbed);
+        TrackePagerAdapter sectionsPagerAdapter = new TrackePagerAdapter(this, getSupportFragmentManager());
+        ViewPager viewPager = findViewById(R.id.view_pager);
+        viewPager.setAdapter(sectionsPagerAdapter);
+        TabLayout tabs = findViewById(R.id.tabs);
+        tabs.setupWithViewPager(viewPager);
     }
 
 
