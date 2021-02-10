@@ -35,7 +35,8 @@ public class TrackerViewModel extends ViewModel {
     }
 
     public void loadData(ContentResolver cr) {
-        this.events = CalendarController.loadTrackedDays(cr, this.calId, this.trackerName);
+        this.cr = cr;
+        this.events = CalendarController.loadTrackedDays(this.cr, this.calId, this.trackerName);
     }
 
     public void toggleTracking(Calendar day) {
