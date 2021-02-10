@@ -74,7 +74,7 @@ public class TrackerFragment extends Fragment {
 
     private void startTracker() {
         CalendarView calendarView = (CalendarView) getView().findViewById(R.id.calendarView);
-        calendarView.setDisabledDays(getDatesUntilEndOfMonth());
+        calendarView.setMaximumDate(Calendar.getInstance());
 
         List<Calendar> trackedDays = pageViewModel.getTrackedDays();
         calendarView.setSelectedDates(trackedDays);
@@ -87,28 +87,5 @@ public class TrackerFragment extends Fragment {
                 pageViewModel.toggleTracking(day);
             }
         });
-    }
-
-
-    public static List<Calendar> getDatesUntilEndOfMonth() {
-
-        LocalDate startDate = LocalDate.now().plusDays(1);
-        LocalDate endDate = startDate.with(TemporalAdjusters.lastDayOfMonth());
-
-        long numOfDaysBetween = ChronoUnit.DAYS.between(startDate, endDate);
-        List<LocalDate> dates = IntStream.iterate(0, i -> i + 1)
-                .limit(numOfDaysBetween)
-                .mapToObj(i -> startDate.plusDays(i))
-                .collect(Collectors.toList());
-
-        List<Calendar> datesUntilEndOfMonth = new ArrayList<Calendar>();
-        for (LocalDate date : dates) {
-            Calendar calendar = Calendar.getInstance();
-            calendar.clear();
-            calendar.set(date.getYear(), date.getMonthValue()-1, date.getDayOfMonth());
-            datesUntilEndOfMonth.add(calendar);
-        }
-
-        return datesUntilEndOfMonth;
     }
 }
