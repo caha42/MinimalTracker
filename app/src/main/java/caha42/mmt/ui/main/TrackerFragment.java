@@ -84,7 +84,9 @@ public class TrackerFragment extends Fragment {
             @Override
             public void onDayClick(EventDay eventDay) {
                 Calendar day = eventDay.getCalendar();
-                pageViewModel.toggleTracking(day);
+                if (eventDay.getCalendar().before(Calendar.getInstance())) {
+                    pageViewModel.toggleTracking(day);
+                }
             }
         });
     }
