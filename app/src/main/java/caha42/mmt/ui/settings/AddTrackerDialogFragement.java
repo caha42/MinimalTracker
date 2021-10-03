@@ -28,6 +28,8 @@ public class AddTrackerDialogFragement extends DialogFragment {
                         public void onClick(DialogInterface dialog, int id) {
                             TextView trackerNameView = AddTrackerDialogFragement.this.getDialog().findViewById(R.id.tracker_name);
                             CalendarController.createCalender(getActivity().getContentResolver(), trackerNameView.getText().toString());
+                            // TODO MainActivity should be recreated.
+                            getActivity().recreate();
                         }
                     })
                     .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
