@@ -60,7 +60,7 @@ public class CalendarController {
         values.put(CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL, CalendarContract.Calendars.CAL_ACCESS_OWNER);
         values.put(CalendarContract.Calendars.OWNER_ACCOUNT, CALENDER_OWNER);
         values.put(CalendarContract.Calendars.DIRTY, 1);
-        values.put(CalendarContract.Calendars.CALENDAR_TIME_ZONE, TimeZone.getDefault().getID());
+        values.put(CalendarContract.Calendars.CALENDAR_TIME_ZONE, TimeZone.getTimeZone("UTC").getID());
 
         Uri calUri = CalendarContract.Calendars.CONTENT_URI;
 
@@ -98,17 +98,15 @@ public class CalendarController {
     }
 
     public static void trackDay(ContentResolver cr, int calendarId, String trackerName, Calendar day) {
-        TimeZone tz = TimeZone.getTimeZone("UTC");
-        day.setTimeZone(tz);
         long dateMillis = day.getTimeInMillis();
 
         ContentValues values = new ContentValues();
         values.put(CalendarContract.Events.DTSTART, dateMillis);
-        values.put(CalendarContract.Events.DTEND, dateMillis + DateUtils.DAY_IN_MILLIS);
+        values.put(CalendarContract.Events.DTEND, dateMillis);
         values.put(CalendarContract.Events.ALL_DAY, true);
         values.put(CalendarContract.Events.TITLE, trackerName);
         values.put(CalendarContract.Events.CALENDAR_ID, calendarId);
-        values.put(CalendarContract.Events.EVENT_TIMEZONE, tz.toString());
+        values.put(CalendarContract.Events.EVENT_TIMEZONE, TimeZone.getTimeZone("UTC").getID());
         cr.insert(CalendarContract.Events.CONTENT_URI, values);
     }
 
