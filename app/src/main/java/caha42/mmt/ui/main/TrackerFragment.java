@@ -20,6 +20,7 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -78,7 +79,7 @@ public class TrackerFragment extends Fragment {
 
         List<Calendar> trackedDays = pageViewModel.getTrackedDays();
         calendarView.setSelectedDates(trackedDays);
-
+        calendarView.setHighlightedDays(trackedDays);
         // set handler
         calendarView.setOnDayClickListener(new OnDayClickListener() {
             @Override
