@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.CalendarContract;
+import android.text.format.DateUtils;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -97,15 +98,17 @@ public class CalendarController {
     }
 
     public static void trackDay(ContentResolver cr, int calendarId, String trackerName, Calendar day) {
+        TimeZone tz = TimeZone.getTimeZone("UTC");
+        day.setTimeZone(tz);
         long dateMillis = day.getTimeInMillis();
 
         ContentValues values = new ContentValues();
         values.put(CalendarContract.Events.DTSTART, dateMillis);
-        values.put(CalendarContract.Events.DTEND, dateMillis);
+        values.put(CalendarContract.Events.DTEND, dateMillis + DateUtils.DAY_IN_MILLIS);
         values.put(CalendarContract.Events.ALL_DAY, true);
         values.put(CalendarContract.Events.TITLE, trackerName);
         values.put(CalendarContract.Events.CALENDAR_ID, calendarId);
-        values.put(CalendarContract.Events.EVENT_TIMEZONE, day.getTimeZone().toString());
+        values.put(CalendarContract.Events.EVENT_TIMEZONE, tz.toString());
         cr.insert(CalendarContract.Events.CONTENT_URI, values);
     }
 
@@ -136,4 +139,5 @@ public class CalendarController {
 //            }
 //        }
     }
+
 }
